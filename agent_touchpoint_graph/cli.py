@@ -7,6 +7,18 @@ import sys
 
 from agent_touchpoint_graph.graph import AgentGraph
 
+USAGE = """usage: agent-touchpoint-graph [--path GRAPH.json] COMMAND ...
+commands:
+  record AGENT TOUCHPOINTS_CSV
+  clusters
+  spof
+  who TOUCHPOINT
+  shared AGENT_A AGENT_B
+  stats
+  export
+  --help
+"""
+
 
 def _pop_path(args: list[str]) -> tuple[str | None, list[str]]:
     if "--path" in args:
@@ -22,13 +34,19 @@ def _pop_path(args: list[str]) -> tuple[str | None, list[str]]:
 
 def main(argv: list[str] | None = None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
+    if args and args[0] in ("-h", "--help", "help"):
+        print(USAGE)
+        return 0
     try:
         path, args = _pop_path(args)
     except SystemExit as exc:
         return int(exc.code)
     g = AgentGraph(path)
 
-    if not args:
+    if not args or args[0] in ("-h", "--help", "help"):
+        if args and args[0] in ("-h", "--help", "help"):
+            print(USAGE)
+            return 0
         print(json.dumps(g.query("all"), indent=2))
         return 0
 
@@ -37,7 +55,11 @@ def main(argv: list[str] | None = None) -> int:
         if len(args) < 3:
             print("usage: record AGENT TOUCHPOINTS_CSV [--path GRAPH.json]", file=sys.stderr)
             return 2
-        result = g.record_action(args[1], args[2].split(","))
+        try:
+            result = g.record_action(args[1], args[2].split(","))
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
         print(json.dumps(result, indent=2))
         return 0
     if cmd == "clusters":
@@ -64,8 +86,9 @@ def main(argv: list[str] | None = None) -> int:
     if cmd == "export":
         print(json.dumps(g.export(), indent=2))
         return 0
-    print(json.dumps(g.query(cmd), indent=2))
-    return 0
+    print(f"unknown command: {cmd}", file=sys.stderr)
+    print(USAGE, file=sys.stderr)
+    return 2
 
 
 if __name__ == "__main__":

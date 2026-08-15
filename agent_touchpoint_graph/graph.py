@@ -9,8 +9,10 @@ Default store: ./state/agent_graph.json (override with path=).
 
 from __future__ import annotations
 
+import copy
 import json
 import logging
+from collections import deque
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -37,6 +39,9 @@ class AgentGraph:
         touchpoints: list[str],
         session_id: str | None = None,
     ) -> dict[str, Any]:
+        if not isinstance(agent, str) or not agent.strip():
+            raise ValueError("agent must be a non-empty string")
+        agent = agent.strip()
         ts = datetime.now(timezone.utc).isoformat()
         session = session_id or ts[:10]
 
@@ -191,12 +196,20 @@ class AgentGraph:
         return q
 
     def export(self) -> dict[str, Any]:
-        return dict(self.graph)
+        return copy.deepcopy(self.graph)
 
     def import_graph(self, data: dict[str, Any]) -> int:
-        for nid, node in data.get("nodes", {}).items():
+        if not isinstance(data, dict):
+            raise TypeError("import_graph requires a dict")
+        nodes = data.get("nodes", {})
+        edges = data.get("edges", {})
+        if not isinstance(nodes, dict) or not isinstance(edges, dict):
+            raise TypeError("nodes and edges must be dicts")
+        for nid, node in nodes.items():
+            if not isinstance(nid, str) or not isinstance(node, dict):
+                raise TypeError("each node must be a string key to a dict")
             if nid not in self.graph.setdefault("nodes", {}):
-                self.graph["nodes"][nid] = node
+                self.graph["nodes"][nid] = copy.deepcopy(node)
             else:
                 existing = self.graph["nodes"][nid]
                 for k, v in node.items():
@@ -207,9 +220,15 @@ class AgentGraph:
                     elif k == "last_seen":
                         existing[k] = max(existing.get(k, v), v)
 
-        for eid, edge in data.get("edges", {}).items():
+        for eid, edge in edges.items():
+            if not isinstance(eid, str) or not isinstance(edge, dict):
+                raise TypeError("each edge must be a string key to a dict")
             if eid not in self.graph.setdefault("edges", {}):
-                self.graph["edges"][eid] = edge
+                self.graph["edges"][eid] = copy.deepcopy(edge)
+            else:
+                existing = self.graph["edges"][eid]
+                if "last_seen" in edge:
+                    existing["last_seen"] = max(existing.get("last_seen", edge["last_seen"]), edge["last_seen"])
 
         self._save()
         return len(self.graph["nodes"])
@@ -241,9 +260,9 @@ class AgentGraph:
 
     def _bfs(self, start: str, adj: dict[str, set[str]], visited: set[str]) -> set[str]:
         cluster: set[str] = set()
-        queue = [start]
+        queue: deque[str] = deque([start])
         while queue:
-            node = queue.pop(0)
+            node = queue.popleft()
             if node in visited:
                 continue
             visited.add(node)
@@ -291,11 +310,18 @@ class AgentGraph:
         agent_count = sum(1 for n in nodes.values() if n.get("type") == "agent")
         asset_count = sum(1 for n in nodes.values() if n.get("type") == "asset")
         wallet_count = sum(1 for n in nodes.values() if n.get("type") == "wallet")
+        market_count = sum(1 for n in nodes.values() if n.get("type") == "market")
+        tool_count = sum(1 for n in nodes.values() if n.get("type") == "tool")
+        counterparty_count = sum(1 for n in nodes.values() if n.get("type") == "counterparty")
+        known = agent_count + asset_count + wallet_count + market_count + tool_count + counterparty_count
         return {
             "total_nodes": len(nodes),
             "total_edges": len(edges),
             "agents": agent_count,
             "assets": asset_count,
             "wallets": wallet_count,
-            "other": len(nodes) - agent_count - asset_count - wallet_count,
+            "markets": market_count,
+            "tools": tool_count,
+            "counterparties": counterparty_count,
+            "other": len(nodes) - known,
         }

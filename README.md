@@ -35,12 +35,13 @@ Default store if no path is given: `./state/agent_graph.json`.
 ## CLI
 
 ```bash
-python3 -m agent_touchpoint_graph.cli --path ./state/agent_graph.json record council-276 "SOL,USDC,wallet_0xABC"
-python3 -m agent_touchpoint_graph.cli --path ./state/agent_graph.json clusters
-python3 -m agent_touchpoint_graph.cli --path ./state/agent_graph.json spof
-python3 -m agent_touchpoint_graph.cli --path ./state/agent_graph.json who wallet_0xABC
-python3 -m agent_touchpoint_graph.cli --path ./state/agent_graph.json shared council-276 threat-monitor
-python3 -m agent_touchpoint_graph.cli --path ./state/agent_graph.json stats
+python3 -m agent_touchpoint_graph --path ./state/agent_graph.json record council-276 "SOL,USDC,wallet_0xABC"
+python3 -m agent_touchpoint_graph --path ./state/agent_graph.json clusters
+python3 -m agent_touchpoint_graph --path ./state/agent_graph.json spof
+python3 -m agent_touchpoint_graph --path ./state/agent_graph.json who wallet_0xABC
+python3 -m agent_touchpoint_graph --path ./state/agent_graph.json shared council-276 threat-monitor
+python3 -m agent_touchpoint_graph --path ./state/agent_graph.json stats
+python3 -m agent_touchpoint_graph --help
 ```
 
 `--path` may appear before or after the command.
