@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.3
+
+- Version strings match (`0.1.3`).
+- Atomic graph save (temp file + replace).
+- Sessions and agent lists are sorted.
+- SPOF includes `market` nodes.
+- `python -m agent_touchpoint_graph` entry.
+- GitHub Actions pytest.
+- SECURITY.md.
+
 ## 0.1.2
 
 - CLI `--path` for an explicit graph file.

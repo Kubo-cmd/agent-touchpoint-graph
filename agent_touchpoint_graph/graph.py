@@ -47,7 +47,7 @@ class AgentGraph:
             "label": agent,
             "first_seen": existing_agent.get("first_seen", ts),
             "last_seen": ts,
-            "sessions": list(set(existing_agent.get("sessions", []) + [session])),
+            "sessions": sorted(set(existing_agent.get("sessions", []) + [session])),
         }
 
         new_nodes = 0
@@ -71,7 +71,7 @@ class AgentGraph:
                 "label": tp,
                 "first_seen": existing_tp.get("first_seen", ts),
                 "last_seen": ts,
-                "agents": list(set(existing_tp.get("agents", []) + [agent])),
+                "agents": sorted(set(existing_tp.get("agents", []) + [agent])),
             }
 
             edge_key = f"{node_id}->{tp_node_id}"
@@ -115,7 +115,7 @@ class AgentGraph:
     def find_single_points_of_failure(self) -> list[dict[str, Any]]:
         spofs: list[dict[str, Any]] = []
         for nid, node in self.graph.get("nodes", {}).items():
-            if node.get("type") in ("asset", "wallet", "counterparty", "tool"):
+            if node.get("type") in ("asset", "wallet", "counterparty", "tool", "market"):
                 agent_count = len(node.get("agents", []))
                 if agent_count >= 2:
                     spofs.append(
@@ -201,7 +201,7 @@ class AgentGraph:
                 existing = self.graph["nodes"][nid]
                 for k, v in node.items():
                     if isinstance(v, list):
-                        existing[k] = list(set(existing.get(k, []) + v))
+                        existing[k] = sorted(set(existing.get(k, []) + v))
                     elif k == "first_seen":
                         existing[k] = min(existing.get(k, v), v)
                     elif k == "last_seen":
@@ -280,7 +280,10 @@ class AgentGraph:
 
     def _save(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.write_text(json.dumps(self.graph, indent=2, default=str))
+        payload = json.dumps(self.graph, indent=2, default=str)
+        tmp = self.path.with_name(self.path.name + ".tmp")
+        tmp.write_text(payload)
+        tmp.replace(self.path)
 
     def _stats(self) -> dict[str, int]:
         nodes = self.graph.get("nodes", {})

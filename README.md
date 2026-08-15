@@ -6,11 +6,15 @@ Local library. Not a fork of Hermes Agent. Does not talk to networks or mutate o
 
 ## Install
 
+Private git source. Not on PyPI.
+
 ```bash
+git clone https://github.com/Kubo-cmd/agent-touchpoint-graph.git
+cd agent-touchpoint-graph
 python3 -m pip install -e ".[dev]"
 ```
 
-From this repository root. Not on PyPI.
+CI: `.github/workflows/ci.yml` runs `pytest` on `main`.
 
 ## API
 
@@ -59,7 +63,7 @@ python3 -m pytest tests/ -q
 
 ## Related
 
-- Portable governance extract: `agent-council`
+- Portable governance extract: https://github.com/Kubo-cmd/agent-council
 - This repo is the portable graph extract of a local AgentGraph module
 - Source tree that stays untouched: local `lyta_agent_graph.py` under the Hermes lyta_core tree
 
