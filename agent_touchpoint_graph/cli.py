@@ -81,7 +81,7 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(g.shared_touchpoints(args[1], args[2]), indent=2))
         return 0
     if cmd == "stats":
-        print(json.dumps(g._stats(), indent=2))
+        print(json.dumps(g.query("all")["result"], indent=2))
         return 0
     if cmd == "export":
         print(json.dumps(g.export(), indent=2))

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.5
+
+- Market labels win over punctuation-as-tool (`sol.market`). URLs stay tools.
+- Wrong-shape JSON graphs warn and start fresh.
+- `record_action` counts accepted labels only.
+- Saved graphs carry `schema_version`.
+- CLI `stats` uses the public query.
+- PyPI classifiers list 3.10 and 3.12 (still not published).
+
 ## 0.1.4
 
 - Fail-closed blank agent and non-dict import.

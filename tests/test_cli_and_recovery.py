@@ -28,7 +28,9 @@ def test_corrupt_json_starts_fresh(tmp_path: Path) -> None:
     path = tmp_path / "bad.json"
     path.write_text("{not json")
     g = AgentGraph(path)
-    assert g.graph == {"nodes": {}, "edges": {}}
+    assert g.graph["nodes"] == {}
+    assert g.graph["edges"] == {}
+    assert g.graph.get("schema_version") == 1
     g.record_action("solo", ["SOL"])
     data = json.loads(path.read_text())
     assert "agent:solo" in data["nodes"]

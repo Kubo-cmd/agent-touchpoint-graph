@@ -51,9 +51,10 @@ python3 -m agent_touchpoint_graph --help
 | Pattern | Type |
 | --- | --- |
 | starts with `0x` or `wallet`/`addr` | wallet |
-| contains `/` `:` `.` | tool |
-| known ticker (`SOL`, `ETH`, …) or `token`/`nft` | asset |
+| contains `://` or starts with `http` | tool |
 | contains `market` | market |
+| known ticker (`SOL`, `ETH`, …) or `token`/`nft` | asset |
+| remaining `/` `:` `.` | tool |
 | else | counterparty |
 
 ## Tests

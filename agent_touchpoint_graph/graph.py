@@ -57,6 +57,7 @@ class AgentGraph:
 
         new_nodes = 0
         new_edges = 0
+        accepted = 0
 
         for tp in touchpoints:
             if not tp or not isinstance(tp, str):
@@ -65,6 +66,7 @@ class AgentGraph:
             if not tp:
                 continue
 
+            accepted += 1
             tp_type = self._classify_touchpoint(tp)
             tp_node_id = f"{tp_type}:{tp}"
 
@@ -95,7 +97,7 @@ class AgentGraph:
         self._save()
         return {
             "agent": agent,
-            "touchpoints": len(touchpoints),
+            "touchpoints": accepted,
             "new_nodes": new_nodes,
             "new_edges": new_edges,
             "total_nodes": len(self.graph["nodes"]),
@@ -237,16 +239,18 @@ class AgentGraph:
         tp_lower = tp.lower().strip()
         if tp_lower.startswith("0x"):
             return "wallet"
-        if any(sym in tp_lower for sym in ("/", ":", ".")):
-            return "tool"
-        if tp_lower in ASSET_SYMBOLS:
-            return "asset"
-        if tp_lower.endswith("-market") or tp_lower.endswith(".market") or "market" in tp_lower:
-            return "market"
-        if "token" in tp_lower or "nft" in tp_lower:
-            return "asset"
         if tp_lower.startswith("wallet") or tp_lower.startswith("addr"):
             return "wallet"
+        if "://" in tp_lower or tp_lower.startswith("http"):
+            return "tool"
+        if tp_lower.endswith("-market") or tp_lower.endswith(".market") or "market" in tp_lower:
+            return "market"
+        if tp_lower in ASSET_SYMBOLS:
+            return "asset"
+        if "token" in tp_lower or "nft" in tp_lower:
+            return "asset"
+        if any(sym in tp_lower for sym in ("/", ":", ".")):
+            return "tool"
         return "counterparty"
 
     def _build_adjacency(self) -> dict[str, set[str]]:
@@ -291,14 +295,21 @@ class AgentGraph:
         if self.path.exists():
             try:
                 data = json.loads(self.path.read_text())
-                if isinstance(data, dict) and "nodes" in data:
+                if isinstance(data, dict) and isinstance(data.get("nodes"), dict):
+                    data.setdefault("edges", {})
+                    if not isinstance(data["edges"], dict):
+                        logger.warning("Graph file edges not a dict, starting fresh")
+                        return {"schema_version": 1, "nodes": {}, "edges": {}}
+                    data.setdefault("schema_version", 1)
                     return data
-            except (json.JSONDecodeError, KeyError):
+                logger.warning("Graph file is valid JSON but not a graph dict, starting fresh")
+            except (json.JSONDecodeError, OSError):
                 logger.warning("Corrupt graph file, starting fresh")
-        return {"nodes": {}, "edges": {}}
+        return {"schema_version": 1, "nodes": {}, "edges": {}}
 
     def _save(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.graph.setdefault("schema_version", 1)
         payload = json.dumps(self.graph, indent=2, default=str)
         tmp = self.path.with_name(self.path.name + ".tmp")
         tmp.write_text(payload)

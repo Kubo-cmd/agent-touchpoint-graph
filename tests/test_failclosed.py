@@ -5,8 +5,8 @@ from agent_touchpoint_graph import AgentGraph, __version__
 from agent_touchpoint_graph.cli import main
 
 
-def test_version_is_014() -> None:
-    assert __version__ == "0.1.4"
+def test_version_is_015() -> None:
+    assert __version__ == "0.1.5"
 
 
 def test_blank_agent_rejected(tmp_path: Path) -> None:
