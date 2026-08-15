@@ -7,9 +7,10 @@ Local library. Not a fork of Hermes Agent. Does not talk to networks or mutate o
 ## Install
 
 ```bash
-cd /Users/test/projects/agent-touchpoint-graph
-python3 -m pip install -e . -q
+python3 -m pip install -e ".[dev]"
 ```
+
+From this repository root. Not on PyPI.
 
 ## API
 
@@ -30,13 +31,15 @@ Default store if no path is given: `./state/agent_graph.json`.
 ## CLI
 
 ```bash
-python3 -m agent_touchpoint_graph.cli record council-276 "SOL,USDC,wallet_0xABC"
-python3 -m agent_touchpoint_graph.cli clusters
-python3 -m agent_touchpoint_graph.cli spof
-python3 -m agent_touchpoint_graph.cli who wallet_0xABC
-python3 -m agent_touchpoint_graph.cli shared council-276 threat-monitor
-python3 -m agent_touchpoint_graph.cli stats
+python3 -m agent_touchpoint_graph.cli --path ./state/agent_graph.json record council-276 "SOL,USDC,wallet_0xABC"
+python3 -m agent_touchpoint_graph.cli --path ./state/agent_graph.json clusters
+python3 -m agent_touchpoint_graph.cli --path ./state/agent_graph.json spof
+python3 -m agent_touchpoint_graph.cli --path ./state/agent_graph.json who wallet_0xABC
+python3 -m agent_touchpoint_graph.cli --path ./state/agent_graph.json shared council-276 threat-monitor
+python3 -m agent_touchpoint_graph.cli --path ./state/agent_graph.json stats
 ```
+
+`--path` may appear before or after the command.
 
 ## Classify
 
@@ -58,7 +61,7 @@ python3 -m pytest tests/ -q
 
 - Portable governance extract: `agent-council`
 - This repo is the portable graph extract of a local AgentGraph module
-- Source tree that stays untouched: `~/.hermes/lyta_core/lyta_agent_graph.py`
+- Source tree that stays untouched: local `lyta_agent_graph.py` under the Hermes lyta_core tree
 
 ## License
 
