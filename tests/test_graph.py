@@ -68,3 +68,20 @@ def test_skips_blank_touchpoints(tmp_path: Path) -> None:
     r = g.record_action("solo", ["", "  ", None])  # type: ignore[list-item]
     assert r["new_nodes"] == 0
     assert r["total_nodes"] == 1
+
+
+def test_who_and_shared(tmp_path: Path) -> None:
+    g = AgentGraph(tmp_path / "who.json")
+    g.record_action("council-276", ["SOL", "wallet_0xABC"])
+    g.record_action("threat-monitor", ["ETH", "wallet_0xABC"])
+    assert g.agents_for("wallet_0xABC") == ["council-276", "threat-monitor"]
+    assert g.shared_touchpoints("council-276", "threat-monitor") == ["wallet_0xABC"]
+    assert g.shared_touchpoints("council-276", "council-276") == []
+    assert g.agents_for("missing") == []
+    assert g.query("who", touchpoint="wallet_0xABC")["result"] == [
+        "council-276",
+        "threat-monitor",
+    ]
+    assert g.query("shared", a="council-276", b="threat-monitor")["result"] == [
+        "wallet_0xABC"
+    ]

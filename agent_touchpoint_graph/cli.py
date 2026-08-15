@@ -30,6 +30,18 @@ def main(argv: list[str] | None = None) -> int:
     if cmd == "spof":
         print(json.dumps(g.find_single_points_of_failure(), indent=2))
         return 0
+    if cmd == "who":
+        if len(args) < 2:
+            print("usage: who TOUCHPOINT", file=sys.stderr)
+            return 2
+        print(json.dumps(g.agents_for(args[1]), indent=2))
+        return 0
+    if cmd == "shared":
+        if len(args) < 3:
+            print("usage: shared AGENT_A AGENT_B", file=sys.stderr)
+            return 2
+        print(json.dumps(g.shared_touchpoints(args[1], args[2]), indent=2))
+        return 0
     if cmd == "stats":
         print(json.dumps(g._stats(), indent=2))
         return 0

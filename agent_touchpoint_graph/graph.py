@@ -130,6 +130,32 @@ class AgentGraph:
         spofs.sort(key=lambda s: s["agent_count"], reverse=True)
         return spofs
 
+    def agents_for(self, touchpoint: str) -> list[str]:
+        """Agents that recorded this exact touchpoint label."""
+        if not touchpoint or not isinstance(touchpoint, str):
+            return []
+        wanted = touchpoint.strip()
+        found: set[str] = set()
+        for node in self.graph.get("nodes", {}).values():
+            if node.get("type") == "agent":
+                continue
+            if node.get("label") == wanted:
+                found.update(node.get("agents", []))
+        return sorted(found)
+
+    def shared_touchpoints(self, agent_a: str, agent_b: str) -> list[str]:
+        """Touchpoint labels recorded by both agents."""
+        if not agent_a or not agent_b or agent_a == agent_b:
+            return []
+        shared: list[str] = []
+        for node in self.graph.get("nodes", {}).values():
+            if node.get("type") == "agent":
+                continue
+            agents = set(node.get("agents", []))
+            if agent_a in agents and agent_b in agents:
+                shared.append(str(node.get("label", "")))
+        return sorted(x for x in shared if x)
+
     def query(self, query_type: str = "all", **kwargs: Any) -> dict[str, Any]:
         q: dict[str, Any] = {
             "query": query_type,
@@ -154,6 +180,12 @@ class AgentGraph:
             q["result"] = self.find_clusters(**kwargs)
         elif query_type == "spof":
             q["result"] = self.find_single_points_of_failure()
+        elif query_type == "shared":
+            q["result"] = self.shared_touchpoints(
+                str(kwargs.get("a", "")), str(kwargs.get("b", ""))
+            )
+        elif query_type == "who":
+            q["result"] = self.agents_for(str(kwargs.get("touchpoint", "")))
         else:
             q["result"] = self._stats()
         return q

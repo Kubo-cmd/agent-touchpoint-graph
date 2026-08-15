@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agent-touchpoint-graph"
-version = "0.1.0"
+version = "0.1.1"
 description = "Persistent swarm knowledge graph: record agent touchpoints, find clusters and single points of failure."
 readme = "README.md"
 requires-python = ">=3.10"
